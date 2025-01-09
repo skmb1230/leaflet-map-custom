@@ -1,5 +1,8 @@
 /* App.css */
+h1 {
+}
+
 .leaflet-container {
-  width: 1000px;
-  height: 100vh;
+  width: 500px;
+  height: 500px;
 }

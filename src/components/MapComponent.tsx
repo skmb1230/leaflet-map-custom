@@ -1,3 +1,4 @@
+import L, { IconOptions } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useState } from "react";
 import { MapContainer, Marker, TileLayer, useMapEvents } from "react-leaflet";
@@ -21,39 +22,49 @@ interface MapComponentProps {
   className?: string;
   /** zoom level */
   zoom?: number;
-  /** has marker */
-  hasMarker?: boolean;
+  /** current Location Marker */
+  hasCurrentLocationMarker?: boolean;
   /** markerOption */
-  markerOption?: markerOptionType;
+  markerOptions?: markerOptionType;
+  /** array markers */
+  markers?: PositionType[];
+  /** current icon option */
+  currentIconOption?: IconOptions;
 }
 
 const MapComponent = (props: MapComponentProps) => {
-  const { position, zoom = 16, markerOption, hasMarker = true } = props;
-  const [positionState, setPositionState] = useState<PositionType>(position);
+  const { position, zoom = 16, markerOptions, hasCurrentLocationMarker = true, markers = [], currentIconOption } = props;
+  const [currentLocation, setCurrentLocation] = useState<PositionType>(position);
+
+  const defaultIcon = L.icon({
+    iconUrl: currentIconOption?.iconUrl || "https://cdn-icons-png.flaticon.com/512/684/684908.png", // default image URL
+    iconSize: currentIconOption?.iconSize || [32, 32],
+    iconAnchor: currentIconOption?.iconAnchor || [16, 32],
+  });
 
   const MarkerHandler = () => {
     useMapEvents({
       click: (e) => {
-        if (!markerOption?.isClickMaker) {
+        if (!markerOptions?.isClickMaker) {
           return;
         }
-        setPositionState(e.latlng);
+        setCurrentLocation(e.latlng);
       },
       moveend: (e) => {
-        if (!markerOption?.isMarkerCenter) {
+        if (!markerOptions?.isMarkerCenter) {
           return;
         }
-        setPositionState(e.target.getCenter());
+        setCurrentLocation(e.target.getCenter());
       },
       zoomend: (e) => {
-        if (!markerOption?.isZoomCenter) {
+        if (!markerOptions?.isZoomCenter) {
           return;
         }
-        setPositionState(e.target.getCenter());
+        setCurrentLocation(e.target.getCenter());
       },
     });
 
-    return <Marker position={positionState} />;
+    return <Marker position={currentLocation} icon={defaultIcon} />;
   };
 
   return (
@@ -62,7 +73,7 @@ const MapComponent = (props: MapComponentProps) => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-      {hasMarker && <MarkerHandler />}
+      {hasCurrentLocationMarker && <MarkerHandler />}
     </MapContainer>
   );
 };

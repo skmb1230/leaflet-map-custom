@@ -32,6 +32,7 @@ export default tseslint.config(
         { allowConstantExport: true }, // 상수를 내보내는 것은 허용
       ],
       "@typescript-eslint/no-unused-vars": "warn",
+      "no-loss-of-precision": "off",
     },
   }
 );

@@ -1,11 +1,17 @@
 import L, { IconOptions } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useState } from "react";
-import { MapContainer, Marker, TileLayer, useMapEvents } from "react-leaflet";
+import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
 
 interface PositionType {
   lat: number;
   lng: number;
+}
+
+export interface CustomArrayMarkersType {
+  position: PositionType;
+  popupText?: string;
+  iconOptions?: IconOptions;
 }
 interface markerOptionType {
   /** current location center marker */
@@ -27,19 +33,22 @@ interface MapComponentProps {
   /** markerOption */
   markerOptions?: markerOptionType;
   /** array markers */
-  markers?: PositionType[];
+  markers?: CustomArrayMarkersType[];
   /** current icon option */
   currentIconOption?: IconOptions;
 }
+const defaultIconUrl = "https://cdn-icons-png.flaticon.com/512/684/684908.png";
+const defaultIconSize: [number, number] = [32, 32];
+const defaultIconAnchor: [number, number] = [16, 32];
 
 const MapComponent = (props: MapComponentProps) => {
   const { position, zoom = 16, markerOptions, hasCurrentLocationMarker = true, markers = [], currentIconOption } = props;
   const [currentLocation, setCurrentLocation] = useState<PositionType>(position);
 
   const defaultIcon = L.icon({
-    iconUrl: currentIconOption?.iconUrl || "https://cdn-icons-png.flaticon.com/512/684/684908.png", // default image URL
-    iconSize: currentIconOption?.iconSize || [32, 32],
-    iconAnchor: currentIconOption?.iconAnchor || [16, 32],
+    iconUrl: currentIconOption?.iconUrl || defaultIconUrl, // default image URL
+    iconSize: currentIconOption?.iconSize || defaultIconSize,
+    iconAnchor: currentIconOption?.iconAnchor || defaultIconAnchor,
   });
 
   const MarkerHandler = () => {
@@ -74,6 +83,13 @@ const MapComponent = (props: MapComponentProps) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
       {hasCurrentLocationMarker && <MarkerHandler />}
+      {markers &&
+        markers.length > 0 &&
+        markers.map((marker, index) => (
+          <Marker key={index} position={marker.position} icon={marker.iconOptions ? L.icon({ ...defaultIcon, ...marker.iconOptions }) : defaultIcon}>
+            <Popup>{marker.popupText}</Popup>
+          </Marker>
+        ))}
     </MapContainer>
   );
 };

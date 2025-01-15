@@ -5,12 +5,13 @@ leaflet-map-custom 프로젝트는 React와 Leaflet을 사용하여 지도를 �
 ## 🔍 주요 기능
 
 OpenStreetMap 기반의 지도 렌더링
-줌 인/아웃 기능
-반응형 지도 지원
-간단하고 확장 가능한 Leaflet 커스터마이징
+
+- 줌 인/아웃 기능
+- 드래그 기능
+- center icon 적용
+- custom icon 적용
+- 서울 2호선 polyline 적용
 
 ## 📷 실행 화면
 
-아래는 지도에서 줌 인/아웃 동작을 보여주는 GIF입니다:
-
-![Zoom In/Out Demo](./public/leaflet-map.gif)
+![Zoom In/Out Demo](./public/leaflet-map-2.gif)

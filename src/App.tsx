@@ -23,7 +23,7 @@ const customMarkers: CustomArrayMarkersType[] = [
 
 function App() {
   return (
-    <div style={{ width: "100vh", display: "flex", flexDirection: "column", alignItems: "center" }}>
+    <div style={{ width: "500px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", marginLeft: "300px" }}>
       <h2>React Leaflet 지도</h2>
       <MapComponent
         position={{ lat: 37.49315643310547, lng: 127.01465606689453 }}

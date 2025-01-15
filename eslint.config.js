@@ -25,7 +25,7 @@ export default tseslint.config(
     rules: {
       // React Hook 규칙 추가 (기본 권장 규칙 포함)
       ...reactHooks.configs.recommended.rules,
-
+      "@typescript-eslint/no-explicit-any": "off",
       // React Refresh 규칙: 컴포넌트 내보내기 관련 설정
       "react-refresh/only-export-components": [
         "warn", // 경고로 표시

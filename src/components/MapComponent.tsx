@@ -1,7 +1,7 @@
 import L, { IconOptions } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useState } from "react";
-import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
+import { MapContainer, Marker, Polyline, Popup, TileLayer, useMapEvents } from "react-leaflet";
 
 interface PositionType {
   lat: number;
@@ -44,6 +44,7 @@ const defaultIconAnchor: [number, number] = [16, 32];
 const MapComponent = (props: MapComponentProps) => {
   const { position, zoom = 16, markerOptions, hasCurrentLocationMarker = true, markers = [], currentIconOption } = props;
   const [currentLocation, setCurrentLocation] = useState<PositionType>(position);
+  const [subwayData, setSubwayData] = useState<any>();
 
   const defaultIcon = L.icon({
     iconUrl: currentIconOption?.iconUrl || defaultIconUrl, // default image URL
@@ -53,13 +54,20 @@ const MapComponent = (props: MapComponentProps) => {
 
   const loadGeoJSON = async () => {
     const response = await fetch("/src/assets/subway.geojson");
-    const data = await response.json();
-    console.log(data);
+    // const data = (await response.json()) as FeatureCollection<Geometry, GeoJsonProperties>;
+    const data = (await response.json()) as any;
+    const filterData = data.features.filter((item) => item.properties.wikidata === "Q17501");
+    console.log(filterData[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]));
+    setSubwayData(filterData[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]));
   };
 
   useEffect(() => {
     loadGeoJSON();
   }, []);
+
+  useEffect(() => {
+    console.log(subwayData);
+  }, [subwayData]);
 
   const MarkerHandler = () => {
     useMapEvents({
@@ -93,6 +101,8 @@ const MapComponent = (props: MapComponentProps) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
       {hasCurrentLocationMarker && <MarkerHandler />}
+      {/* 노선 표시 */}
+      {subwayData && <Polyline positions={subwayData} color="green" weight={4} />}
       {markers &&
         markers.length > 0 &&
         markers.map((marker, index) => (

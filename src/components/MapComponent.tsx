@@ -1,6 +1,6 @@
 import L, { IconOptions } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
 
 interface PositionType {
@@ -50,6 +50,16 @@ const MapComponent = (props: MapComponentProps) => {
     iconSize: currentIconOption?.iconSize || defaultIconSize,
     iconAnchor: currentIconOption?.iconAnchor || defaultIconAnchor,
   });
+
+  const loadGeoJSON = async () => {
+    const response = await fetch("/src/assets/subway.geojson");
+    const data = await response.json();
+    console.log(data);
+  };
+
+  useEffect(() => {
+    loadGeoJSON();
+  }, []);
 
   const MarkerHandler = () => {
     useMapEvents({

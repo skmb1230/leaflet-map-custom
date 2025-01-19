@@ -1,4 +1,5 @@
-import L, { IconOptions } from "leaflet";
+import { Feature, FeatureCollection, GeoJsonProperties, LineString } from "geojson";
+import L, { IconOptions, LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useState } from "react";
 import { MapContainer, Marker, Polyline, Popup, TileLayer, useMapEvents } from "react-leaflet";
@@ -37,6 +38,11 @@ interface MapComponentProps {
   /** current icon option */
   currentIconOption?: IconOptions;
 }
+
+interface SubwayLine {
+  coordinates: LatLngExpression[]; // 각 노선의 좌표 배열
+  color: string; // 노선의 색상
+}
 const defaultIconUrl = "https://cdn-icons-png.flaticon.com/512/684/684908.png";
 const defaultIconSize: [number, number] = [32, 32];
 const defaultIconAnchor: [number, number] = [16, 32];
@@ -45,6 +51,7 @@ const MapComponent = (props: MapComponentProps) => {
   const { position, zoom = 16, markerOptions, hasCurrentLocationMarker = true, markers = [], currentIconOption } = props;
   const [currentLocation, setCurrentLocation] = useState<PositionType>(position);
   const [subwayData, setSubwayData] = useState<any>();
+  const [isInitRender, setIsInitRender] = useState(true);
 
   const defaultIcon = L.icon({
     iconUrl: currentIconOption?.iconUrl || defaultIconUrl, // default image URL
@@ -54,16 +61,23 @@ const MapComponent = (props: MapComponentProps) => {
 
   const loadGeoJSON = async () => {
     const response = await fetch("/src/assets/subway.geojson");
-    // const data = (await response.json()) as FeatureCollection<Geometry, GeoJsonProperties>;
-    const data = (await response.json()) as any;
-    const filterData = data.features.filter((item) => item.properties.wikidata === "Q17501");
-    console.log(filterData[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]));
-    setSubwayData(filterData[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]));
+    const data = (await response.json()) as FeatureCollection<LineString, GeoJsonProperties>;
+    // LineString 타입 데이터 필터링
+    const filteredSubwayLines = data.features
+      .filter((item: Feature<LineString, GeoJsonProperties>) => item.geometry.type === "LineString")
+      .map((item: Feature<LineString, GeoJsonProperties>) => ({
+        coordinates: item.geometry.coordinates.map(([lng, lat]: [number, number]) => [lat, lng] as LatLngExpression), // 좌표 변환
+        color: item.properties.colour, // 컬러 속성 추가 (기본값: green)
+      }));
+    setSubwayData(filteredSubwayLines);
   };
 
   useEffect(() => {
-    loadGeoJSON();
-  }, []);
+    if (isInitRender) {
+      loadGeoJSON();
+      setIsInitRender(false);
+    }
+  }, [isInitRender]);
 
   useEffect(() => {
     console.log(subwayData);
@@ -102,7 +116,7 @@ const MapComponent = (props: MapComponentProps) => {
       />
       {hasCurrentLocationMarker && <MarkerHandler />}
       {/* 노선 표시 */}
-      {subwayData && <Polyline positions={subwayData} color="green" weight={4} />}
+      {subwayData && subwayData.map((line, index) => <Polyline key={index} positions={line.coordinates} color={line.color} weight={3} />)}
       {markers &&
         markers.length > 0 &&
         markers.map((marker, index) => (
